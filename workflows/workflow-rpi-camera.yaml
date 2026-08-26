@@ -1,0 +1,68 @@
+id: a1337c98-3f25-4aca-b624-1baeaafe6a68
+name: rpi-camera
+description: >-
+  Enumerate cameras from rpi-local and assert outputRecognized == true —
+  NOT cameraCount > 0, since zero cameras is this machine's normal,
+  verified state. outputRecognized catches the real failure mode: a
+  future rpicam-apps update changing --list-cameras's output shape in a
+  way this model's parser doesn't recognize, which would otherwise fail
+  silently as "0 cameras" indistinguishable from the honest zero-camera
+  case. Camera presence changes rarely, so this runs once a day rather
+  than every 5 minutes like the telemetry extensions.
+version: 1
+tags: {}
+trigger:
+  schedule: "51 6 * * *"
+jobs:
+  - name: collect
+    description: Enumerate cameras.
+    dependsOn: []
+    steps:
+      - name: readCameras
+        task:
+          type: model_method
+          modelIdOrName: rpi-local
+          methodName: readCameras
+        dependsOn: []
+
+  - name: assert
+    description: Fail the run when rpicam-hello's output couldn't be recognized.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: output-recognized
+        allowFailure: false
+        task:
+          type: assert
+          expr: >-
+            data.latest("rpi-local", "cameras").attributes.outputRecognized == true
+          message: >-
+            rpicam-hello output wasn't recognized as either the known
+            zero-camera message or a valid header-line format — cameraCount
+            can't be trusted. rawOutput: ${{ data.latest("rpi-local", "cameras").attributes.rawOutput }}
+          severity: medium
+        dependsOn: []
+
+  - name: report
+    description: >-
+      Print a one-screen summary. Depends on collect only (not assert), so
+      it still runs when an assertion fails.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: summarize
+        task:
+          type: model_method
+          modelType: "command/shell"
+          modelName: rpi-camera-summary
+          methodName: execute
+          inputs:
+            run: >-
+              echo "rpi-camera: rpi-local" &&
+              echo "  cameraCount: ${{ data.latest('rpi-local', 'cameras').attributes.cameraCount }}" &&
+              echo "  outputRecognized: ${{ data.latest('rpi-local', 'cameras').attributes.outputRecognized }}"
+        dependsOn: []
