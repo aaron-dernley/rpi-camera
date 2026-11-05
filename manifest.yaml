@@ -1,12 +1,15 @@
 manifestVersion: 1
 name: "@aaronge/rpi-camera"
-version: "2026.08.26.1"
+version: "2026.11.05.1"
 description: "Enumerates Raspberry Pi CSI camera modules via rpicam-hello --list-cameras, as a typed, versioned Swamp model. Zero cameras is a valid, verified result, not an error."
 
 repository: https://github.com/aaron-dernley/rpi-camera
 
 models:
   - rpi_camera.ts
+
+workflows:
+  - workflow-rpi-camera.yaml
 
 additionalFiles:
   - README.md

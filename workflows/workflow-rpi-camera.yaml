@@ -1,7 +1,7 @@
 id: a1337c98-3f25-4aca-b624-1baeaafe6a68
-name: rpi-camera
+name: "@aaronge/rpi-camera"
 description: >-
-  Enumerate cameras from rpi-local and assert outputRecognized == true —
+  Enumerate cameras from camera-local and assert outputRecognized == true —
   NOT cameraCount > 0, since zero cameras is this machine's normal,
   verified state. outputRecognized catches the real failure mode: a
   future rpicam-apps update changing --list-cameras's output shape in a
@@ -21,7 +21,7 @@ jobs:
       - name: readCameras
         task:
           type: model_method
-          modelIdOrName: rpi-local
+          modelIdOrName: camera-local
           methodName: readCameras
         dependsOn: []
 
@@ -37,11 +37,11 @@ jobs:
         task:
           type: assert
           expr: >-
-            data.latest("rpi-local", "cameras").attributes.outputRecognized == true
+            data.latest("camera-local", "cameras").attributes.outputRecognized == true
           message: >-
             rpicam-hello output wasn't recognized as either the known
             zero-camera message or a valid header-line format — cameraCount
-            can't be trusted. rawOutput: ${{ data.latest("rpi-local", "cameras").attributes.rawOutput }}
+            can't be trusted. rawOutput: ${{ data.latest("camera-local", "cameras").attributes.rawOutput }}
           severity: medium
         dependsOn: []
 
@@ -62,7 +62,7 @@ jobs:
           methodName: execute
           inputs:
             run: >-
-              echo "rpi-camera: rpi-local" &&
-              echo "  cameraCount: ${{ data.latest('rpi-local', 'cameras').attributes.cameraCount }}" &&
-              echo "  outputRecognized: ${{ data.latest('rpi-local', 'cameras').attributes.outputRecognized }}"
+              echo "rpi-camera: camera-local" &&
+              echo "  cameraCount: ${{ data.latest('camera-local', 'cameras').attributes.cameraCount }}" &&
+              echo "  outputRecognized: ${{ data.latest('camera-local', 'cameras').attributes.outputRecognized }}"
         dependsOn: []

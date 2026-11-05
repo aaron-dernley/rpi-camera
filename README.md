@@ -21,9 +21,9 @@ swamp extension pull @aaronge/rpi-camera
 ## Usage
 
 ```sh
-swamp model create @aaronge/rpi-camera rpi-local
+swamp model create @aaronge/rpi-camera camera-local
 
-swamp model method run rpi-local readCameras
+swamp model method run camera-local readCameras
 ```
 
 The method writes one resource: `cameras`. Every field is described — run
@@ -33,7 +33,7 @@ Reference the latest snapshot from a workflow assert step or another model:
 
 ```yaml
 expr: >-
-  data.latest("rpi-local", "cameras").attributes.outputRecognized == true
+  data.latest("camera-local", "cameras").attributes.outputRecognized == true
 ```
 
 ## Global arguments
@@ -66,7 +66,11 @@ names a Raspberry Pi — before writing anything.
 
 ## Workflow
 
-The extension ships an `rpi-camera` workflow: a `collect` job runs
+The workflow is listed under `workflows:` in `manifest.yaml`, so
+`swamp extension pull @aaronge/rpi-camera` installs it alongside the model. It
+expects a model instance named `camera-local`.
+
+The extension ships an `@aaronge/rpi-camera` workflow: a `collect` job runs
 `readCameras`, an `assert` job checks `outputRecognized == true` (catches
 a future `rpicam-apps` update changing the output format in a way this
 parser doesn't recognize — the real failure mode, since a plain
